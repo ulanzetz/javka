@@ -1,0 +1,30 @@
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'application'
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+    compile 'com.typesafe.akka:akka-http_2.12:10.1.10'
+    compile 'com.typesafe.akka:akka-http-jackson_2.12:10.1.10'
+    compile 'com.typesafe.akka:akka-stream_2.12:2.5.26'
+    compile 'org.springframework.data:spring-data-jpa:1.0.2.RELEASE'
+    compile 'org.postgresql:postgresql:42.2.5'
+    compile 'org.hibernate:hibernate-entitymanager:4.2.1.Final'
+    compile 'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final'
+}
+
+mainClassName = "ru.naumen.javka.Main"
+
+
+group 'ru.naumen.javka'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+run {
+    standardInput = System.in
+}
