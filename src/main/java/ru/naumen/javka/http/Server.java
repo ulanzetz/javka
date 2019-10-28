@@ -15,7 +15,7 @@ public class Server extends RouteDirectives {
     public Server(List<HttpModule> modules) {
         if (modules.size() == 0)
             throw new RuntimeException("Can't create server without modules");
-        route = concat(modules.head().route(), modules.mapConserve(HttpModule::route));
+        route = concat(modules.head().api(), modules.mapConserve(HttpModule::api));
     }
 
     public void start(String host, int port, ActorSystem system, ActorMaterializer materializer) {

@@ -3,7 +3,11 @@ package ru.naumen.javka;
 import com.typesafe.config.Config;
 import ru.naumen.javka.components.*;
 import ru.naumen.javka.http.Server;
+import ru.naumen.javka.storage.FileStorage;
+import ru.naumen.javka.storage.LocalFileStorage;
 import scala.collection.JavaConverters;
+
+import java.nio.file.Paths;
 
 public class Main {
     public static void main(String[] args) {
@@ -12,7 +16,8 @@ public class Main {
 
         DbComponent db = new DbComponent(cfg.getString("db.host"), cfg.getString("db.user"), cfg.getString("db.password"));
         RepositoryComponent repos = new RepositoryComponent(db);
-        ServiceComponent services = new ServiceComponent(repos);
+        FileStorage fileStorage = new LocalFileStorage(Paths.get(cfg.getString("storage.path")));
+        ServiceComponent services = new ServiceComponent(repos, fileStorage);
         ModuleComponent modules = new ModuleComponent(services);
 
         String host = cfg.getString("server.host");
