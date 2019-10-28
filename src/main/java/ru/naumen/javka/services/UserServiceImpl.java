@@ -10,7 +10,7 @@ public class UserServiceImpl implements UserService {
         this.userRepository = userRepository;
     }
 
-    public Iterable<User> list() {
-        return userRepository.findAll();
+    public User get(long id) {
+        return userRepository.findOne(id);
     }
 }

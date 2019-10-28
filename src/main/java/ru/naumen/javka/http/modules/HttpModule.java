@@ -1,5 +1,6 @@
 package ru.naumen.javka.http.modules;
 
+import akka.http.javadsl.marshallers.jackson.Jackson;
 import akka.http.javadsl.model.StatusCodes;
 import akka.http.javadsl.server.AllDirectives;
 import akka.http.javadsl.server.Route;
@@ -18,5 +19,9 @@ public abstract class HttpModule extends AllDirectives {
     Route internalError(Throwable th) {
         logger().error("Unhandled error", th);
         return complete(StatusCodes.INTERNAL_SERVER_ERROR, "Произошла внутреняя ошибка");
+    }
+
+    <T> Route jsonComplete(T obj) {
+        return complete(StatusCodes.OK, obj, Jackson.marshaller());
     }
 }
