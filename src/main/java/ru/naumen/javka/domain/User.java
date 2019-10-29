@@ -11,11 +11,18 @@ public class User {
 
     private String name;
 
+    @Column(name = "password_hash")
+    private String passwordHash;
+
     public long getId() {
         return id;
     }
 
     public String getName() {
         return name;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
     }
 }

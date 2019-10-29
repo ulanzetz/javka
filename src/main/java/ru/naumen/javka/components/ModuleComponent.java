@@ -12,7 +12,7 @@ public class ModuleComponent {
     public ModuleComponent(ServiceComponent services, SessionManager sessionManager) {
         list = new ArrayList<>();
         list.add(new LivenessModule());
-        list.add(new SignUpModule(sessionManager));
+        list.add(new SignUpModule(services.getSignUpService()));
         list.add(new UserModule(services.getUserService(), sessionManager));
         list.add(new FileModule(services.getFileService()));
     }

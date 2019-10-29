@@ -19,15 +19,26 @@ public class Main {
         Config cfg = exec.getConfig();
 
         DbComponent db = new DbComponent(cfg.getString("db.host"), cfg.getString("db.user"), cfg.getString("db.password"));
+
         RepositoryComponent repos = new RepositoryComponent(db);
+
         FileStorage fileStorage = new LocalFileStorage(Paths.get(cfg.getString("storage.path")));
-        ServiceComponent services = new ServiceComponent(repos, fileStorage);
+
         TimeProvider timeProvider = new LiveTimeProvider();
+
         SessionManager sessionManager = new StatelessSessionManager(
                 cfg.getString("session.secret"),
                 cfg.getLong("session.ageSeconds"),
                 timeProvider
         );
+
+        ServiceComponent services = new ServiceComponent(
+                repos,
+                fileStorage,
+                sessionManager,
+                cfg.getString("password.salt")
+        );
+
         ModuleComponent modules = new ModuleComponent(services, sessionManager);
 
         String host = cfg.getString("server.host");

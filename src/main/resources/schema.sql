@@ -3,7 +3,8 @@ create table users
     id   serial  not null
         constraint users_pk
             primary key,
-    name varchar not null
+    name varchar(100) not null,
+    password_hash varchar(100) not null
 );
 
 create unique index users_id_uindex
