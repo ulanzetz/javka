@@ -15,6 +15,7 @@ create table files
     id serial not null,
     name varchar(100) not null,
     creator int not null,
+    parentId int,
     description varchar(100),
     path varchar(256) not null
 );
@@ -25,6 +26,8 @@ create unique index files_id_uindex
 alter table files
     add constraint files_users_id_fk
         foreign key (creator) references users;
+    add constraint files_files_id_fk
+        foreign key (parent) references files;
 
 create table groups
 (

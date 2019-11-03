@@ -1,5 +1,7 @@
 package ru.naumen.javka.domain;
 
+import com.sun.istack.internal.Nullable;
+
 import javax.persistence.*;
 
 @Entity
@@ -17,6 +19,16 @@ public class File {
 
     private String description;
 
+    public File(String name, String path, String description, long creator){
+        this.name = name;
+        this.path = path;
+        this.description = description;
+        this.creator = creator;
+    }
+
+    @Nullable
+    private long parentId;
+
     public long getId() {
         return id;
     }
@@ -32,4 +44,7 @@ public class File {
     public String getDescription() {
         return description;
     }
+
+    @Nullable
+    public long getParentId() {return parentId;}
 }
