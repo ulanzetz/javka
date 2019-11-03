@@ -4,4 +4,5 @@ import ru.naumen.javka.domain.User;
 
 public interface UserService {
     User get(long id);
+    User[] getAll();
 }
