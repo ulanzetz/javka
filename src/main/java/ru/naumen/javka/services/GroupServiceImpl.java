@@ -3,6 +3,7 @@ package ru.naumen.javka.services;
 import ru.naumen.javka.domain.Group;
 import ru.naumen.javka.repositories.GroupRepository;
 
+import javax.persistence.Query;
 import java.util.List;
 
 public class GroupServiceImpl {
@@ -13,22 +14,29 @@ public class GroupServiceImpl {
     }
 
     public List<Group> getAllAvailable(long creatorId) {
-        // Generaly it is not secure, but we are using typed template here which should not allow
-        // an insertion of string
-        String query = String.format("SELECT * FROM groups WHERE creator=%d;", creatorId);
+        String query = "SELECT * FROM groups WHERE creator=?1;";
         return groupRepository
                 .getEntityManager()
                 .createNativeQuery(query)
+                .setParameter(1, creatorId)
                 .getResultList();
     }
 
     void create(String name, long creatorId, long[] userIds) {
         Group group = new Group(name, creatorId);
         groupRepository.save(group);
-        for (long userId : userIds) {
-            String query = String.format("INSERT INTO user_groups VALUES (%d, %d)", userId, group.getId());
-            groupRepository.getEntityManager().createNativeQuery(query).executeUpdate();
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("INSERT INTO user_groups VALUES ");
+        for (int i = 0; i< userIds.length; i++) {
+            stringBuilder.append(String.format("(%d, ?0) ", i+1));
         }
+        stringBuilder.append(";");
+        Query nativeQuery = groupRepository.getEntityManager().createNativeQuery(stringBuilder.toString());
+        nativeQuery.setParameter(0, group.getId());
+        for (int i = 0; i< userIds.length; i++) {
+            nativeQuery.setParameter(i+1, userIds[i]);
+        }
+        nativeQuery.executeUpdate();
     }
 
     ;
