@@ -28,7 +28,7 @@ public class FileServiceImpl implements FileService {
         }
     }
 
-    public List<File> getAvailableFiles(long userId){
+    public List<File> getAvailableFiles(long userId) {
         String ownFilesQuery = String.format("SELECT * FROM files WHERE creator=%d;", userId);
         List<File> ownFiles = this.fileRepository
                 .getEntityManager()
@@ -46,8 +46,7 @@ public class FileServiceImpl implements FileService {
 
     }
 
-    public void addFile(String name, String path, String description, long creator, byte[] filedata) throws JavkaException
-    {
+    public void addFile(String name, String path, String description, long creator, byte[] filedata) throws JavkaException {
         File file = new File(name, path, description, creator);
         fileRepository.save(file);
         try {
@@ -57,7 +56,7 @@ public class FileServiceImpl implements FileService {
         }
     }
 
-    public List<File> getDirectoryContent(long directoryId){
+    public List<File> getDirectoryContent(long directoryId) {
         String query = String.format("SELECT * FROM files WHERE \"parentId\"=%d;", directoryId);
         return fileRepository
                 .getEntityManager()

@@ -13,6 +13,8 @@ public class FileRepositoryImpl extends SimpleJpaRepository<File, Long> implemen
 
     private EntityManager entityManager;
 
-    public EntityManager getEntityManager() {return entityManager;}
+    public EntityManager getEntityManager() {
+        return entityManager;
+    }
 }
 

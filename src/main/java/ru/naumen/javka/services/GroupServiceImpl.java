@@ -29,6 +29,8 @@ public class GroupServiceImpl {
             String query = String.format("INSERT INTO user_groups VALUES (%d, %d)", userId, group.getId());
             groupRepository.getEntityManager().createNativeQuery(query).executeUpdate();
         }
-    };
+    }
+
+    ;
 
 }

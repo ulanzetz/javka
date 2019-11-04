@@ -18,7 +18,9 @@ public class Group {
         this.creator = creator;
     }
 
-    public long getCreator() { return creator;}
+    public long getCreator() {
+        return creator;
+    }
 
     public long getId() {
         return id;

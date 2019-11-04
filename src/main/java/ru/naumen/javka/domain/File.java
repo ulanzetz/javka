@@ -19,7 +19,7 @@ public class File {
 
     private String description;
 
-    public File(String name, String path, String description, long creator){
+    public File(String name, String path, String description, long creator) {
         this.name = name;
         this.path = path;
         this.description = description;
@@ -46,5 +46,7 @@ public class File {
     }
 
     @Nullable
-    public long getParentId() {return parentId;}
+    public long getParentId() {
+        return parentId;
+    }
 }

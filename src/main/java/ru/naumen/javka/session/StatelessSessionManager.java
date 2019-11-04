@@ -39,7 +39,7 @@ public class StatelessSessionManager implements SessionManager {
         Long decodedSeconds = Long.parseLong(splitted[1]);
         Long ageSec = Long.parseLong(splitted[2]);
         Long current = timeProvider.currentSeconds();
-        if(current > decodedSeconds + ageSec)
+        if (current > decodedSeconds + ageSec)
             return Optional.empty();
         else
             return Optional.of(Long.parseLong(splitted[0]));

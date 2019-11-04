@@ -13,6 +13,8 @@ public class GroupRepositoryImpl extends SimpleJpaRepository<Group, Long> implem
 
     private EntityManager entityManager;
 
-    public EntityManager getEntityManager() {return entityManager;}
+    public EntityManager getEntityManager() {
+        return entityManager;
+    }
 }
 
