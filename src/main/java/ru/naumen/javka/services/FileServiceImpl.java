@@ -29,14 +29,7 @@ public class FileServiceImpl implements FileService {
     }
 
     public List<File> getAvailableFiles(long userId) {
-        String query = "SELECT * FROM files WHERE creator=?1 " +
-                "UNION " +
-                "SELECT * FROM files JOIN group_files ON files.id = group_files.file_id where group_files.group_id IN (SELECT DISTINCT(group_id) from user_groups where user_id = ?1;";
-        return this.fileRepository
-                .getEntityManager()
-                .createNativeQuery(query)
-                .setParameter(1, userId)
-                .getResultList();
+        return fileRepository.getAvailableFiles(userId);
     }
 
     public void addFile(String name, String path, String description, long creator, byte[] filedata) throws JavkaException {
@@ -50,31 +43,14 @@ public class FileServiceImpl implements FileService {
     }
 
     public List<File> getDirectoryContent(long directoryId) {
-        String query = "SELECT * FROM files WHERE \"parentId\"= ?1;";
-        return fileRepository
-                .getEntityManager()
-                .createNativeQuery(query)
-                .setParameter(1, directoryId)
-                .getResultList();
+        return fileRepository.getDirectoryContent(directoryId);
     }
 
-    public void shareWithUser(long fileId, long userId) throws JavkaException {
-        String query = "INSERT INTO user_files VALUES (?1, ?2);";
-        fileRepository
-                .getEntityManager()
-                .createNativeQuery(query)
-                .setParameter(1, userId)
-                .setParameter(2, fileId)
-                .executeUpdate();
+    public void shareWithUser(long fileId, long userId) {
+        fileRepository.shareWithUser(fileId, userId);
     }
 
-    public void shareWithGroup(long fileId, long groupId) throws JavkaException {
-        String query = "INSERT INTO file_groups VALUES (?1, ?2);";
-        fileRepository
-                .getEntityManager()
-                .createNativeQuery(query)
-                .setParameter(1, fileId)
-                .setParameter(2, groupId)
-                .executeUpdate();
+    public void shareWithGroup(long fileId, long groupId) {
+        fileRepository.shareWithGroup(fileId, groupId);
     }
 }

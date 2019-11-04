@@ -7,4 +7,5 @@ public interface GroupService {
     void create(String name, long creatorId, long[] userIds) throws JavkaException;
 
     Iterable<Group> getAllAvailable(long creatorId) throws JavkaException;
+
 }

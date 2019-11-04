@@ -4,6 +4,8 @@ import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import ru.naumen.javka.domain.Group;
 
 import javax.persistence.EntityManager;
+import javax.persistence.Query;
+import java.util.List;
 
 public class GroupRepositoryImpl extends SimpleJpaRepository<Group, Long> implements GroupRepository {
     public GroupRepositoryImpl(EntityManager em) {
@@ -15,6 +17,30 @@ public class GroupRepositoryImpl extends SimpleJpaRepository<Group, Long> implem
 
     public EntityManager getEntityManager() {
         return entityManager;
+    }
+
+    public void addUsersToGroup(long groupId, long[] userIds) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("INSERT INTO user_groups VALUES ");
+        for (int i = 0; i< userIds.length; i++) {
+            stringBuilder.append(String.format("(%d, ?0) ", i+1));
+        }
+        stringBuilder.append(";");
+        Query nativeQuery = entityManager.createNativeQuery(stringBuilder.toString());
+        nativeQuery.setParameter(0, groupId);
+        for (int i = 0; i< userIds.length; i++) {
+            nativeQuery.setParameter(i+1, userIds[i]);
+        }
+        nativeQuery.executeUpdate();
+    }
+
+    public List<Group> getAllAvailable(long creatorId) {
+        String query = "SELECT * FROM groups WHERE creator=?1;";
+        return entityManager
+                .createNativeQuery(query)
+                .setParameter(1, creatorId)
+                .getResultList();
+
     }
 }
 
