@@ -41,12 +41,12 @@ public class FileServiceImpl implements FileService {
 
     public void addFile(String name, String path, String description, long creator, byte[] filedata) throws JavkaException {
         File file = new File(name, path, description, creator);
-        fileRepository.save(file);
         try {
-            storage.savePath(path, filedata);
+            storage.saveFile(path, filedata);
         } catch (IOException io) {
             throw new SaveFileException(path, io);
         }
+        fileRepository.save(file);
     }
 
     public List<File> getDirectoryContent(long directoryId) {

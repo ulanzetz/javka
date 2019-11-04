@@ -31,6 +31,11 @@ public class SignUpSeviceImpl implements SignUpService {
         }
     }
 
+    public User create(String name, String password) throws NoSuchAlgorithmException{
+        User user = new User(name, hash(password));
+        return userRepository.save(user);
+    }
+
     private String hash(String password) throws NoSuchAlgorithmException {
         MessageDigest crypt = MessageDigest.getInstance("SHA-1");
         crypt.reset();

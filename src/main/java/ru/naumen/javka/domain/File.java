@@ -1,14 +1,12 @@
 package ru.naumen.javka.domain;
 
-import com.sun.istack.internal.Nullable;
-
 import javax.persistence.*;
 
 @Entity
 @Table(name = "files")
 public class File {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     private String name;
@@ -26,7 +24,6 @@ public class File {
         this.creator = creator;
     }
 
-    @Nullable
     private long parentId;
 
     public long getId() {
@@ -45,7 +42,6 @@ public class File {
         return description;
     }
 
-    @Nullable
     public long getParentId() {
         return parentId;
     }
