@@ -34,7 +34,10 @@ create table groups
     id   serial  not null
         constraint groups_pk
             primary key,
-    name varchar(100) not null
+    name varchar(100) not null,
+    creator int not null
+        constraint groups_users_id_fk
+            references users (id)
 );
 
 create unique index groups_id_uindex
@@ -57,7 +60,7 @@ create table user_groups
     user_id int not null
         constraint user_groups_users_id_fk
             references users,
-    file_id int not null
+    group_id int not null
         constraint user_groups_groups_id_fk
             references groups (id),
     constraint user_groups_pk

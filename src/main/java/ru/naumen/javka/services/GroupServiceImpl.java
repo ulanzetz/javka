@@ -15,8 +15,9 @@ public class GroupServiceImpl implements GroupService{
     private SessionManager sessionManager;
 
 
-    public GroupServiceImpl(GroupRepository groupRepository) {
+    public GroupServiceImpl(GroupRepository groupRepository, SessionManager sessionManager) {
         this.groupRepository = groupRepository;
+        this.sessionManager = sessionManager;
     }
 
     public List<Group> getAllAvailable(String sessionToken) throws JavkaException{
@@ -24,7 +25,6 @@ public class GroupServiceImpl implements GroupService{
         try {
             userId = sessionManager.userId(sessionToken);
         } catch (Throwable th){
-            System.out.println(th.getMessage());
             throw new NoPermissionException();
         }
         if (userId.isPresent())
@@ -43,7 +43,10 @@ public class GroupServiceImpl implements GroupService{
             throw new NoPermissionException();
 
         Group group = new Group(name, userId.get());
-        groupRepository.save(group);
+        groupRepository.getEntityManager().getTransaction().begin();
+        group = groupRepository.save(group);
+        groupRepository.getEntityManager().getTransaction().commit();
         groupRepository.addUsersToGroup(group.getId(), userIds);
+
     };
 }
