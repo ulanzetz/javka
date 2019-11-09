@@ -12,7 +12,9 @@ create unique index users_id_uindex
 
 create table files
 (
-    id serial not null,
+    id serial not null
+        constraint files_pk
+            primary key,
     name varchar(100) not null,
     creator int not null,
     parentId int,

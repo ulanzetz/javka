@@ -15,7 +15,7 @@ public class ServiceComponent {
                             SessionManager sessionManager,
                             String passwordSalt) {
         userService = new UserServiceImpl(repos.getUserRepository());
-        fileService = new FileServiceImpl(fileStorage);
+        fileService = new FileServiceImpl(fileStorage, repos.getFileRepository(), sessionManager);
         signUpService = new SignUpSeviceImpl(sessionManager, repos.getUserRepository(), passwordSalt);
         groupService = new GroupServiceImpl(repos.getGroupRepository(), sessionManager);
     }

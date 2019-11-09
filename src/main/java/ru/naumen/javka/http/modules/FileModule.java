@@ -2,6 +2,7 @@ package ru.naumen.javka.http.modules;
 
 import akka.http.javadsl.model.HttpResponse;
 import akka.http.javadsl.server.Route;
+import akka.http.scaladsl.model.StatusCodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.naumen.javka.exceptions.JavkaException;
@@ -20,15 +21,42 @@ public class FileModule extends HttpModule {
 
     @Override
     public Route api() {
-        return pathPrefix(segment("files").slash(segment()), fileName -> {
-            try {
-                return complete(HttpResponse.create().withEntity(fileService.getFile(1, fileName)));
-            } catch (JavkaException javka) {
-                return javkaError(javka);
-            } catch (Throwable th) {
-                return internalError(th);
-            }
-        });
+        Route shareWithUser = pathPrefix("files", () ->
+                pathPrefix("shareWithUser", () ->
+                        parameter("fileId" ,fileId ->
+                                parameter("userId" ,userId ->
+                                        parameter("session", session ->
+                                        {
+                                            try {
+                                                fileService.shareWithUser(session, Long.parseLong(fileId), Long.parseLong(userId));
+                                                return complete(StatusCodes.OK());
+                                            } catch (Throwable th) {
+                                                return internalError(th);
+                                            }
+                                        })
+                                )
+                        ))
+        );
+
+
+        Route shareWithGroup = pathPrefix("files", () ->
+                pathPrefix("shareWithGroup", () ->
+                        parameter("fileId" ,fileId ->
+                                parameter("groupId", groupId ->
+                                        parameter("session", session ->
+                                        {
+                                            try {
+                                                fileService.shareWithGroup(session, Long.parseLong(fileId), Long.parseLong(groupId));
+                                                return complete(StatusCodes.OK());
+                                            } catch (Throwable th) {
+                                                return internalError(th);
+                                            }
+                                        })
+                                )
+                        ))
+        );
+
+        return concat(shareWithGroup, shareWithUser);
     }
 
     @Override

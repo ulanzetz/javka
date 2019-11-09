@@ -14,7 +14,7 @@ public interface FileRepository extends CrudRepository<File, Long> {
 
     void shareWithGroup(long fileId, long groupId);
 
-    List<File> getDirectoryContent(long directoryId);
+    List<File> getDirectoryContent(long userId, long directoryId);
 
     List<File> getAvailableFiles(long userId);
 }

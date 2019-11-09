@@ -1,20 +1,19 @@
 package ru.naumen.javka.components;
 
-import ru.naumen.javka.repositories.GroupRepository;
-import ru.naumen.javka.repositories.GroupRepositoryImpl;
-import ru.naumen.javka.repositories.UserRepository;
-import ru.naumen.javka.repositories.UserRepositoryImpl;
+import ru.naumen.javka.repositories.*;
 
 import javax.persistence.EntityManager;
 
 public class RepositoryComponent {
     private UserRepository userRepository;
     private GroupRepository groupRepository;
+    private FileRepository fileRepository;
 
     public RepositoryComponent(DbComponent db) {
         EntityManager em = db.getEm();
         userRepository = new UserRepositoryImpl(em);
         groupRepository = new GroupRepositoryImpl(em);
+        fileRepository = new FileRepositoryImpl(em);
     }
 
     public UserRepository getUserRepository() {
@@ -23,5 +22,9 @@ public class RepositoryComponent {
 
     public GroupRepository getGroupRepository() {
         return groupRepository;
+    }
+
+    public FileRepository getFileRepository() {
+        return fileRepository;
     }
 }

@@ -24,7 +24,11 @@ public class File {
         this.creator = creator;
     }
 
-    private long parentId;
+    private Long parentId;
+
+    public File() {
+
+    }
 
     public long getId() {
         return id;
@@ -40,6 +44,10 @@ public class File {
 
     public String getDescription() {
         return description;
+    }
+
+    public Long getCreator() {
+        return creator;
     }
 
     public long getParentId() {

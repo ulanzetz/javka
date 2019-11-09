@@ -5,5 +5,6 @@
     <persistence-unit name="fuckXML"  transaction-type="RESOURCE_LOCAL">
         <class>ru.naumen.javka.domain.User</class>
         <class>ru.naumen.javka.domain.Group</class>
+        <class>ru.naumen.javka.domain.File</class>
     </persistence-unit>
 </persistence>
