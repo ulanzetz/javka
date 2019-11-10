@@ -23,8 +23,8 @@ public class FileModule extends HttpModule {
     public Route api() {
         Route shareWithUser = pathPrefix("files", () ->
                 pathPrefix("shareWithUser", () ->
-                        parameter("fileId" ,fileId ->
-                                parameter("userId" ,userId ->
+                        parameter("fileId", fileId ->
+                                parameter("userId", userId ->
                                         parameter("session", session ->
                                         {
                                             try {
@@ -38,10 +38,35 @@ public class FileModule extends HttpModule {
                         ))
         );
 
+        Route getAvailableFiles = pathPrefix("files", () ->
+                pathPrefix("getDirectoryContent", () ->
+                        parameter("directoryId", directoryId ->
+                                parameter("session", session ->
+                                {
+                                    try {
+                                        return jsonComplete(fileService.getDirectoryContent(session, Long.parseLong(directoryId)));
+                                    } catch (Throwable th) {
+                                        return internalError(th);
+                                    }
+                                })
+                        )
+                ));
+
+        Route getDirectoryContent = pathPrefix("files", () ->
+                pathPrefix("getAvailableFiles", () ->
+                        parameter("session", session ->
+                        {
+                            try {
+                                return jsonComplete(fileService.getAvailableFiles(session));
+                            } catch (Throwable th) {
+                                return internalError(th);
+                            }
+                        })
+                ));
 
         Route shareWithGroup = pathPrefix("files", () ->
                 pathPrefix("shareWithGroup", () ->
-                        parameter("fileId" ,fileId ->
+                        parameter("fileId", fileId ->
                                 parameter("groupId", groupId ->
                                         parameter("session", session ->
                                         {
@@ -56,7 +81,7 @@ public class FileModule extends HttpModule {
                         ))
         );
 
-        return concat(shareWithGroup, shareWithUser);
+        return concat(shareWithGroup, shareWithUser, getAvailableFiles, getDirectoryContent);
     }
 
     @Override

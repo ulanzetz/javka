@@ -46,17 +46,32 @@ public class FileRepositoryImpl extends SimpleJpaRepository<File, Long> implemen
     }
 
     public List<File> getDirectoryContent(long userId, long directoryId) {
-        String query = "SELECT * FROM files WHERE \"parentId\"= ?1";
+        String query = "SELECT *\n" +
+                "FROM files\n" +
+                "WHERE files.parentid = ?2 AND (" +
+                "\tEXISTS (SELECT * FROM user_files WHERE user_files.user_id = ?1 AND user_files.file_id = files.id)\n" +
+                "OR\n" +
+                "\tEXISTS (SELECT * FROM user_groups JOIN group_files on user_groups.group_id = group_files.group_id WHERE user_groups.user_id = ?1 AND group_files.file_id = files.id)\n" +
+                "OR\n" +
+                "\tfiles.creator = ?1)";
+
         return entityManager
                 .createNativeQuery(query)
-                .setParameter(1, directoryId)
+                .setParameter(1, userId)
+                .setParameter(2, (int) directoryId)
                 .getResultList();
     }
 
     public List<File> getAvailableFiles(long userId) {
-        String query = "SELECT * FROM files WHERE creator=?1 " +
-                "UNION " +
-                "SELECT * FROM files JOIN group_files ON files.id = group_files.file_id where group_files.group_id IN (SELECT DISTINCT(group_id) from user_groups where user_id = ?1;";
+        String query = "SELECT *\n" +
+                "FROM files\n" +
+                "WHERE files.parentid IS NULL AND (" +
+                "\tEXISTS (SELECT * FROM user_files WHERE user_files.user_id = ?1 AND user_files.file_id = files.id)\n" +
+                "OR\n" +
+                "\tEXISTS (SELECT * FROM user_groups JOIN group_files on user_groups.group_id = group_files.group_id WHERE user_groups.user_id = ?1 AND group_files.file_id = files.id)\n" +
+                "OR\n" +
+                "\tfiles.creator = ?1)";
+
         return entityManager
                 .createNativeQuery(query)
                 .setParameter(1, userId)
