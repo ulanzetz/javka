@@ -9,6 +9,7 @@ import ru.naumen.javka.exceptions.JavkaException;
 
 public abstract class HttpModule extends AllDirectives {
     public abstract Route api();
+
     protected abstract Logger logger();
 
     Route javkaError(JavkaException javka) {

@@ -18,9 +18,15 @@ public class UserModule extends SessionModule {
 
     @Override
     public Route api() {
-        return pathPrefix("users", () ->
+        Route currentUser = pathPrefix("users", () ->
                 pathPrefix("current", () -> userId(userId -> jsonComplete(userService.get(userId))))
         );
+
+        Route all = pathPrefix("users", () ->
+                jsonComplete(userService.getAll())
+        );
+
+        return concat(currentUser, all);
     }
 
     @Override

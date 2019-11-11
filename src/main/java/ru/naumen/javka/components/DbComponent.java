@@ -3,6 +3,7 @@ package ru.naumen.javka.components;
 import org.hibernate.ejb.HibernatePersistence;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+
 import javax.persistence.EntityManager;
 
 public class DbComponent {

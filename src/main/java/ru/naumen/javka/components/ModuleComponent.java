@@ -15,6 +15,7 @@ public class ModuleComponent {
         list.add(new SignUpModule(services.getSignUpService()));
         list.add(new UserModule(services.getUserService(), sessionManager));
         list.add(new FileModule(services.getFileService()));
+        list.add(new GroupModule(services.getGroupService(), sessionManager));
     }
 
     public List<HttpModule> getList() {
