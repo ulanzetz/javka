@@ -14,7 +14,7 @@ public class ModuleComponent {
         list.add(new LivenessModule());
         list.add(new SignUpModule(services.getSignUpService()));
         list.add(new UserModule(services.getUserService(), sessionManager));
-        list.add(new FileModule(services.getFileService()));
+        list.add(new FileModule(services.getFileService(), sessionManager));
         list.add(new GroupModule(services.getGroupService(), sessionManager));
     }
 

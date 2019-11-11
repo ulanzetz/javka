@@ -18,24 +18,13 @@ public class FileServiceImpl implements FileService {
 
     private FileRepository fileRepository;
 
-    private SessionManager sessionManager;
-
-    public FileServiceImpl(FileStorage storage, FileRepository fileRepository, SessionManager sessionManager) {
+    public FileServiceImpl(FileStorage storage, FileRepository fileRepository) {
         this.storage = storage;
-        this.sessionManager = sessionManager;
         this.fileRepository = fileRepository;
     }
 
-    @Override
-    public byte[] getFile(String session, String path) throws JavkaException {
-        Optional<Long> userId;
-        try {
-            userId = sessionManager.userId(session);
-        } catch (Throwable th){
-            throw new NoPermissionException();
-        }
-        if (!userId.isPresent())
-            throw new NoPermissionException();
+    public byte[] getFile(long userId, String path) throws JavkaException {
+        // FIXME: add avaliable check
         try {
             return storage.getFile(path);
         } catch (IOException io) {
@@ -43,74 +32,33 @@ public class FileServiceImpl implements FileService {
         }
     }
 
-    public List<File> getAvailableFiles(String session) throws NoPermissionException {
-        Optional<Long> userId;
-        try {
-            userId = sessionManager.userId(session);
-        } catch (Throwable th){
-            throw new NoPermissionException();
-        }
-        if (!userId.isPresent())
-            throw new NoPermissionException();
-        return fileRepository.getAvailableFiles(userId.get());
+    public List<File> getAvailableFiles(long userId) {
+        return fileRepository.getAvailableFiles(userId);
     }
 
-    public void addFile(String session, String name, String path, String description, byte[] filedata) throws JavkaException {
-        Optional<Long> userId;
+    public void addFile(long userId, String name, String path, String description, byte[] file) throws JavkaException {
         try {
-            userId = sessionManager.userId(session);
-        } catch (Throwable th){
-            throw new NoPermissionException();
-        }
-        if (!userId.isPresent())
-            throw new NoPermissionException();
-        File file = new File(name, path, description, userId.get());
-        try {
-            storage.saveFile(path, filedata);
+            storage.saveFile(path, file);
         } catch (IOException io) {
             throw new SaveFileException(path, io);
         }
-        fileRepository.save(file);
+        fileRepository.save(new File(name, path, description, userId));
     }
 
-    public List<File> getDirectoryContent(String session, long directoryId) throws NoPermissionException{
-        Optional<Long> userId;
-        try {
-            userId = sessionManager.userId(session);
-        } catch (Throwable th){
-            throw new NoPermissionException();
-        }
-        if (!userId.isPresent())
-            throw new NoPermissionException();
-        return fileRepository.getDirectoryContent(userId.get(), directoryId);
+    public List<File> getDirectoryContent(long userId, long directoryId) {
+        return fileRepository.getDirectoryContent(userId, directoryId);
     }
 
-    public void shareWithUser(String session, long fileId, long userId) throws NoPermissionException {
+    public void shareWithUser(long userId, long fileId, long otherUserId) throws JavkaException {
         File file = fileRepository.findOne(fileId);
-        Optional<Long> ownerId;
-        try {
-            ownerId = sessionManager.userId(session);
-        } catch (Throwable th){
-            throw new NoPermissionException();
-        }
-        if (!ownerId.isPresent())
-            throw new NoPermissionException();
-        if (!file.getCreator().equals(ownerId.get()))
+        if (!file.getCreator().equals(userId))
             throw new NoPermissionException();
         fileRepository.shareWithUser(fileId, userId);
     }
 
-    public void shareWithGroup(String session, long fileId, long groupId) throws NoPermissionException {
+    public void shareWithGroup(long userId, long fileId, long groupId) throws NoPermissionException {
         File file = fileRepository.findOne(fileId);
-        Optional<Long> ownerId;
-        try {
-            ownerId = sessionManager.userId(session);
-        } catch (Throwable th){
-            throw new NoPermissionException();
-        }
-        if (!ownerId.isPresent())
-            throw new NoPermissionException();
-        if (!file.getCreator().equals(ownerId.get()))
+        if (!file.getCreator().equals(userId))
             throw new NoPermissionException();
         fileRepository.shareWithGroup(fileId, groupId);
     }

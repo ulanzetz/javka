@@ -18,7 +18,9 @@ public class User {
         return id;
     }
 
-    public User(){}
+    public User() {
+
+    }
 
     public User(String name, String passwordHash) {
         this.name = name;
@@ -31,5 +33,9 @@ public class User {
 
     public String getPasswordHash() {
         return passwordHash;
+    }
+
+    public void cleanPasswordHash() {
+        passwordHash = null;
     }
 }

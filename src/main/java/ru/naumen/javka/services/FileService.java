@@ -4,15 +4,15 @@ import ru.naumen.javka.domain.File;
 import ru.naumen.javka.exceptions.JavkaException;
 
 public interface FileService {
-    byte[] getFile(String session, String path) throws JavkaException;
+    byte[] getFile(long userId, String path) throws JavkaException;
 
-    Iterable<File> getAvailableFiles(String session) throws JavkaException;
+    Iterable<File> getAvailableFiles(long userId) throws JavkaException;
 
-    Iterable<File> getDirectoryContent(String session, long directoryId) throws JavkaException;
+    Iterable<File> getDirectoryContent(long userId, long directoryId) throws JavkaException;
 
-    void addFile(String session, String name, String path, String description, byte[] file) throws JavkaException;
+    void addFile(long userId, String name, String path, String description, byte[] file) throws JavkaException;
 
-    void shareWithUser(String session, long fileId, long userId) throws JavkaException;
+    void shareWithUser(long userId, long fileId, long otherUserId) throws JavkaException;
 
-    void shareWithGroup(String session, long fileId, long groupId) throws JavkaException;
+    void shareWithGroup(long userId, long fileId, long groupId) throws JavkaException;
 }

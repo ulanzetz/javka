@@ -4,13 +4,24 @@ import akka.http.javadsl.marshallers.jackson.Jackson;
 import akka.http.javadsl.model.StatusCodes;
 import akka.http.javadsl.server.AllDirectives;
 import akka.http.javadsl.server.Route;
+import akka.http.javadsl.unmarshalling.StringUnmarshallers;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import ru.naumen.javka.exceptions.JavkaException;
+
+import java.util.HashMap;
+import java.util.function.Function;
 
 public abstract class HttpModule extends AllDirectives {
     public abstract Route api();
 
     protected abstract Logger logger();
+
+    private ObjectMapper objectMapper = new ObjectMapper()
+            .enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
+            .setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
     Route javkaError(JavkaException javka) {
         logger().error("Handled error", javka);
@@ -23,6 +34,18 @@ public abstract class HttpModule extends AllDirectives {
     }
 
     <T> Route jsonComplete(T obj) {
-        return complete(StatusCodes.OK, obj, Jackson.marshaller());
+        return complete(StatusCodes.OK, obj, Jackson.marshaller(objectMapper));
+    }
+
+    Route ok() {
+        return jsonComplete(new HashMap<String, String>() {
+            {
+                put("status", "OK");
+            }
+        });
+    }
+
+    Route longParam(String name, Function<Long, Route> inner) {
+        return parameter(StringUnmarshallers.LONG, name, inner);
     }
 }

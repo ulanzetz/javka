@@ -15,9 +15,9 @@ public class ServiceComponent {
                             SessionManager sessionManager,
                             String passwordSalt) {
         userService = new UserServiceImpl(repos.getUserRepository());
-        fileService = new FileServiceImpl(fileStorage, repos.getFileRepository(), sessionManager);
+        fileService = new FileServiceImpl(fileStorage, repos.getFileRepository());
         signUpService = new SignUpSeviceImpl(sessionManager, repos.getUserRepository(), passwordSalt);
-        groupService = new GroupServiceImpl(repos.getGroupRepository(), sessionManager);
+        groupService = new GroupServiceImpl(repos.getGroupRepository());
     }
 
     public UserService getUserService() {
@@ -32,7 +32,5 @@ public class ServiceComponent {
         return signUpService;
     }
 
-    public GroupService getGroupService() {
-        return groupService;
-    }
+    public GroupService getGroupService() { return groupService; }
 }
