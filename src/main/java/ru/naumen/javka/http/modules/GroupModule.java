@@ -1,14 +1,12 @@
 package ru.naumen.javka.http.modules;
 
-import akka.http.javadsl.server.Complete;
 import akka.http.javadsl.server.Route;
-import akka.http.scaladsl.model.StatusCodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.naumen.javka.services.GroupService;
 import ru.naumen.javka.session.SessionManager;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 
 public class GroupModule extends SessionModule {
     private GroupService groupService;
@@ -22,32 +20,27 @@ public class GroupModule extends SessionModule {
 
     @Override
     public Route api() {
-        Route create = pathPrefix("groups", () ->
-                pathPrefix("create", () ->
-                    parameter("name" ,name ->
-                      parameter("session", session ->
-                          parameterList("userIds", userIds -> {
-                              try {
-                                  Object[] userIdsArray = userIds.toArray();
-                                  long[] users = new long[userIdsArray.length];
-                                  for(int i=0; i < users.length; i++) {
-                                      users[i] = Long.parseLong(userIdsArray[i].toString());
-                                  }
-                                   groupService.create(name, session, users);
-                                   return complete(StatusCodes.OK());
-                              } catch (Throwable th) {
-                                  return internalError(th);
-                              }
-                          })
-                      )
-                    ))
-                );
-
-
-        Route getAllAvailable = pathPrefix("groups", () ->
-                parameter("session", session -> {
+        Route create = pathPrefix("create", () ->
+                parameter("name", name ->
+                        userId(userId -> {
                             try {
-                                return jsonComplete(groupService.getAllAvailable(session));
+                                Long id = groupService.create(userId, name);
+                                return jsonComplete(new HashMap<String, Long>() {
+                                    {
+                                        put("id", id);
+                                    }
+                                });
+                            } catch (Throwable th) {
+                                return internalError(th);
+                            }
+                        })
+                )
+        );
+
+        Route getAllAvailable = pathEndOrSingleSlash(() ->
+                userId(userId -> {
+                            try {
+                                return jsonComplete(groupService.getUserGroups(userId));
                             } catch (Throwable th) {
                                 return internalError(th);
                             }
@@ -55,7 +48,7 @@ public class GroupModule extends SessionModule {
                 )
         );
 
-        return concat(create, getAllAvailable);
+        return pathPrefix("groups", () -> concat(create, getAllAvailable));
     }
 
     @Override

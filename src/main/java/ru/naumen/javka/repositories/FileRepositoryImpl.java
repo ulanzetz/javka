@@ -15,10 +15,6 @@ public class FileRepositoryImpl extends SimpleJpaRepository<File, Long> implemen
 
     private EntityManager entityManager;
 
-    public EntityManager getEntityManager() {
-        return entityManager;
-    }
-
     public void shareWithUser(long fileId, long userId) {
         EntityTransaction transaction = entityManager.getTransaction();
         if (!transaction.isActive())

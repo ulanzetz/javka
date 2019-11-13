@@ -1,87 +1,94 @@
 package ru.naumen.javka.http.modules;
 
-import akka.http.javadsl.model.HttpResponse;
 import akka.http.javadsl.server.Route;
 import akka.http.scaladsl.model.StatusCodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.naumen.javka.exceptions.JavkaException;
 import ru.naumen.javka.services.FileService;
+import ru.naumen.javka.session.SessionManager;
 
-import static akka.http.javadsl.server.PathMatchers.*;
-
-public class FileModule extends HttpModule {
+public class FileModule extends SessionModule {
     private FileService fileService;
     private Logger logger;
 
-    public FileModule(FileService fileService) {
+    public FileModule(FileService fileService, SessionManager sessionManager) {
+        super(sessionManager);
         this.fileService = fileService;
         logger = LoggerFactory.getLogger(FileModule.class);
     }
 
     @Override
     public Route api() {
-        Route shareWithUser = pathPrefix("files", () ->
+        Route shareWithUser =
                 pathPrefix("shareWithUser", () ->
-                        parameter("fileId", fileId ->
-                                parameter("userId", userId ->
-                                        parameter("session", session ->
+                        longParam("fileId", fileId ->
+                                longParam("otherUserId", otherUserId ->
+                                        userId(userId ->
                                         {
                                             try {
-                                                fileService.shareWithUser(session, Long.parseLong(fileId), Long.parseLong(userId));
-                                                return complete(StatusCodes.OK());
+                                                fileService.shareWithUser(userId, fileId, otherUserId);
+                                                return ok();
+                                            } catch (JavkaException javka) {
+                                                return javkaError(javka);
                                             } catch (Throwable th) {
                                                 return internalError(th);
                                             }
                                         })
                                 )
-                        ))
-        );
+                        )
+                );
 
-        Route getAvailableFiles = pathPrefix("files", () ->
+        Route getDirectoryContent =
                 pathPrefix("getDirectoryContent", () ->
-                        parameter("directoryId", directoryId ->
-                                parameter("session", session ->
+                        longParam("directoryId", directoryId ->
+                                userId(userId ->
                                 {
                                     try {
-                                        return jsonComplete(fileService.getDirectoryContent(session, Long.parseLong(directoryId)));
+                                        return jsonComplete(fileService.getDirectoryContent(userId, directoryId));
+                                    } catch (JavkaException javka) {
+                                        return javkaError(javka);
                                     } catch (Throwable th) {
                                         return internalError(th);
                                     }
                                 })
                         )
-                ));
+                );
 
-        Route getDirectoryContent = pathPrefix("files", () ->
+        Route getAvailableFiles =
                 pathPrefix("getAvailableFiles", () ->
-                        parameter("session", session ->
+                        userId(userId ->
                         {
                             try {
-                                return jsonComplete(fileService.getAvailableFiles(session));
+                                return jsonComplete(fileService.getAvailableFiles(userId));
+                            } catch (JavkaException javka) {
+                                return javkaError(javka);
                             } catch (Throwable th) {
                                 return internalError(th);
                             }
                         })
-                ));
+                );
 
-        Route shareWithGroup = pathPrefix("files", () ->
+        Route shareWithGroup =
                 pathPrefix("shareWithGroup", () ->
-                        parameter("fileId", fileId ->
-                                parameter("groupId", groupId ->
-                                        parameter("session", session ->
+                        longParam("fileId", fileId ->
+                                longParam("groupId", groupId ->
+                                        userId(userId ->
                                         {
                                             try {
-                                                fileService.shareWithGroup(session, Long.parseLong(fileId), Long.parseLong(groupId));
+                                                fileService.shareWithGroup(userId, fileId, groupId);
                                                 return complete(StatusCodes.OK());
+                                            } catch (JavkaException javka) {
+                                                return javkaError(javka);
                                             } catch (Throwable th) {
                                                 return internalError(th);
                                             }
                                         })
                                 )
-                        ))
-        );
+                        )
+                );
 
-        return concat(shareWithGroup, shareWithUser, getAvailableFiles, getDirectoryContent);
+        return pathPrefix("files", () -> concat(shareWithGroup, shareWithUser, getAvailableFiles, getDirectoryContent));
     }
 
     @Override

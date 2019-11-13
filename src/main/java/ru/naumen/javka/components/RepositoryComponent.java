@@ -20,9 +20,7 @@ public class RepositoryComponent {
         return userRepository;
     }
 
-    public GroupRepository getGroupRepository() {
-        return groupRepository;
-    }
+    public GroupRepository getGroupRepository() { return groupRepository; }
 
     public FileRepository getFileRepository() {
         return fileRepository;

@@ -4,8 +4,6 @@ import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import ru.naumen.javka.domain.Group;
 
 import javax.persistence.EntityManager;
-import javax.persistence.Query;
-import java.util.Arrays;
 import java.util.List;
 
 public class GroupRepositoryImpl extends SimpleJpaRepository<Group, Long> implements GroupRepository {
@@ -16,35 +14,20 @@ public class GroupRepositoryImpl extends SimpleJpaRepository<Group, Long> implem
 
     private EntityManager entityManager;
 
-    public EntityManager getEntityManager() {
-        return entityManager;
-    }
-
-    public void addUsersToGroup(long groupId, long[] userIds) {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("INSERT INTO user_groups VALUES ");
-        for (int i = 0; i< userIds.length; i++) {
-            stringBuilder.append(String.format("(?%d, ?0),", i+1));
-        }
-        stringBuilder.deleteCharAt(stringBuilder.length()-1);
-        stringBuilder.append(";");
-        Query nativeQuery = entityManager.createNativeQuery(stringBuilder.toString());
-        nativeQuery.setParameter(0, groupId);
-        for (int i = 0; i< userIds.length; i++) {
-            nativeQuery.setParameter(i+1, userIds[i]);
-        }
-        entityManager.getTransaction().begin();
-        nativeQuery.executeUpdate();
-        entityManager.getTransaction().commit();
-    }
-
-    public List<Group> getAllAvailable(long creatorId) {
-        String query = "SELECT * FROM groups WHERE creator=?1";
+    public List<Group> getUserGroups(long userId) {
         return entityManager
-                .createNativeQuery(query)
-                .setParameter(1, creatorId)
+                .createNativeQuery("SELECT id, name, creator FROM groups LEFT JOIN user_groups on id = group_id WHERE user_id =?1 OR creator =?1 ORDER BY id")
+                .setParameter(1, userId)
                 .getResultList();
 
+    }
+
+    public long createGroup(long creatorId, String name) {
+        return (long) (int) entityManager
+                .createNativeQuery("INSERT into groups (name, creator) VALUES (?1, ?2) RETURNING id")
+                .setParameter(1, name)
+                .setParameter(2, creatorId)
+                .getSingleResult();
     }
 }
 

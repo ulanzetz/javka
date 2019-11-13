@@ -3,7 +3,7 @@ create table users
     id   serial  not null
         constraint users_pk
             primary key,
-    name varchar(100) not null,
+    name varchar(100) not null unique,
     password_hash varchar(100) not null
 );
 

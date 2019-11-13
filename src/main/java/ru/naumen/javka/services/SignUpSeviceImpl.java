@@ -1,6 +1,7 @@
 package ru.naumen.javka.services;
 
 import ru.naumen.javka.domain.User;
+import ru.naumen.javka.exceptions.ValidationException;
 import ru.naumen.javka.repositories.UserRepository;
 import ru.naumen.javka.session.SessionManager;
 import ru.naumen.javka.utils.ByteUtils;
@@ -21,19 +22,24 @@ public class SignUpSeviceImpl implements SignUpService {
     }
 
     @Override
-    public Optional<String> session(Long userId, String password) throws Throwable {
-        User user = userRepository.findOne(userId);
-        String hash = hash(password);
-        if (user.getPasswordHash().equals(hash)) {
-            return Optional.of(sessionManager.session(userId));
-        } else {
-            return Optional.empty();
+    public Optional<String> signUp(String userName, String password) throws Throwable {
+        if(password.length() < 6) {
+            throw new ValidationException("Длина пароля должна превышать 6 символов");
         }
-    }
-
-    public User create(String name, String password) throws NoSuchAlgorithmException{
-        User user = new User(name, hash(password));
-        return userRepository.save(user);
+        if(userName.length() < 5) {
+            throw new ValidationException("Длина имени должны превышать 5 символов");
+        }
+        Optional<User> maybeUser = userRepository.findByName(userName);
+        if (maybeUser.isPresent()) {
+            User user = maybeUser.get();
+            String hash = hash(password);
+            if (user.getPasswordHash().equals(hash)) {
+                return Optional.of(sessionManager.session(user.getId()));
+            } else {
+                return Optional.empty();
+            }
+        } else return
+                Optional.of(sessionManager.session(userRepository.save(userName, hash(password))));
     }
 
     private String hash(String password) throws NoSuchAlgorithmException {
