@@ -12,10 +12,22 @@ import scala.collection.immutable.List;
 public class Server extends RouteDirectives {
     private Route route;
 
-    public Server(List<HttpModule> modules) {
+    private Route staticContent() {
+        return concat(
+                pathEndOrSingleSlash(() -> getFromResource("static/index.html")),
+                getFromResourceDirectory("static")
+        );
+    }
+
+    private Route api(List<HttpModule> modules) {
         if (modules.size() == 0)
             throw new RuntimeException("Can't create server without modules");
-        route = concat(modules.head().api(), modules.mapConserve(HttpModule::api));
+
+        return pathPrefix("api", () -> concat(modules.head().api(), modules.mapConserve(HttpModule::api)));
+    }
+
+    public Server(List<HttpModule> modules) {
+        route = concat(api(modules), staticContent());
     }
 
     public void start(String host, int port, ActorSystem system, ActorMaterializer materializer) {
