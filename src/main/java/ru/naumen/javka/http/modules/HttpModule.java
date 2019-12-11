@@ -5,6 +5,7 @@ import akka.http.javadsl.model.StatusCodes;
 import akka.http.javadsl.server.AllDirectives;
 import akka.http.javadsl.server.Route;
 import akka.http.javadsl.unmarshalling.StringUnmarshallers;
+import akka.http.javadsl.marshalling.Marshaller;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,6 +36,10 @@ public abstract class HttpModule extends AllDirectives {
 
     <T> Route jsonComplete(T obj) {
         return complete(StatusCodes.OK, obj, Jackson.marshaller(objectMapper));
+    }
+
+    Route binaryComplete(byte[] array) {
+        return complete(StatusCodes.OK, array, Marshaller.byteArrayToEntity());
     }
 
     Route ok() {

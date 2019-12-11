@@ -38,10 +38,12 @@ public class FileServiceImpl implements FileService {
 
     public void addFile(long userId, String name, String path, String description, byte[] file) throws JavkaException {
         try {
-            storage.saveFile(path, file);
+            // FIXME: no path
+            storage.saveFile(name, file);
         } catch (IOException io) {
             throw new SaveFileException(path, io);
         }
+        // FIXME: don't work
         fileRepository.save(new File(name, path, description, userId));
     }
 

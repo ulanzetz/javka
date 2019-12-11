@@ -1,6 +1,8 @@
 package ru.naumen.javka.http.modules;
 
+import akka.http.javadsl.model.Multipart;
 import akka.http.javadsl.server.Route;
+import akka.http.javadsl.unmarshalling.Unmarshaller;
 import akka.http.scaladsl.model.StatusCodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +11,8 @@ import ru.naumen.javka.services.FileService;
 import ru.naumen.javka.session.SessionManager;
 
 public class FileModule extends SessionModule {
+    private long UNMARHALL_TIMEOUT_MILLIS = 10000000;
+
     private FileService fileService;
     private Logger logger;
 
@@ -88,7 +92,60 @@ public class FileModule extends SessionModule {
                         )
                 );
 
-        return pathPrefix("files", () -> concat(shareWithGroup, shareWithUser, getAvailableFiles, getDirectoryContent));
+        Route upload = extractRequestContext(ctx ->
+                pathPrefix("upload", () ->
+                        userId(userId ->
+                                parameter("description", description ->
+                                        parameter("name", name -> entity(Unmarshaller.entityToMultipartFormData(), formData -> {
+                                                    try {
+                                                        Multipart.FormData.Strict strict = formData
+                                                                .toStrict(UNMARHALL_TIMEOUT_MILLIS, ctx.getMaterializer())
+                                                                .toCompletableFuture()
+                                                                .get();
+
+                                                        Multipart.BodyPart.Strict first = strict
+                                                                .getStrictParts()
+                                                                .iterator()
+                                                                .next()
+                                                                .toStrict(UNMARHALL_TIMEOUT_MILLIS, ctx.getMaterializer())
+                                                                .toCompletableFuture()
+                                                                .get();
+
+                                                        byte[] content = first.getEntity().getData().toArray();
+
+                                                        // FIXME path
+                                                        fileService.addFile(userId, name, "path", description, content);
+
+                                                        return complete(StatusCodes.OK());
+                                                    } catch (JavkaException javka) {
+                                                        return javkaError(javka);
+                                                    } catch (Throwable th) {
+                                                        return internalError(th);
+                                                    }
+                                                }
+                                        ))))
+                ));
+
+        Route getFile = pathPrefix("get", () ->
+                userId(userId -> parameter("path", path -> {
+                    try {
+                        return binaryComplete(fileService.getFile(userId, path));
+                    } catch (JavkaException javka) {
+                        return javkaError(javka);
+                    } catch (Throwable th) {
+                        return internalError(th);
+                    }
+                })));
+
+        return pathPrefix("files", () -> concat(
+                shareWithGroup,
+                shareWithUser,
+                getAvailableFiles,
+                getDirectoryContent,
+                upload,
+                getFile
+            )
+        );
     }
 
     @Override
