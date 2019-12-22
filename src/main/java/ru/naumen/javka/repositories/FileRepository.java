@@ -13,4 +13,6 @@ public interface FileRepository extends CrudRepository<File, Long> {
     List<File> getDirectoryContent(long userId, long directoryId);
 
     List<File> getAvailableFiles(long userId);
+
+    boolean isFileAccessible(long userId, long fileId);
 }

@@ -22,15 +22,7 @@ public class FileServiceImpl implements FileService {
     }
 
     public byte[] getFile(long userId, long fileId) throws JavkaException {
-        boolean available = false;
-        List<File> files = getAvailableFiles(userId);
-        for (int i =0; i< files.size(); i++) {
-            if (files.get(i).getId() == fileId){
-                available = true;
-                break;
-            }
-        }
-        if (!available){
+        if (!fileRepository.isFileAccessible(userId, fileId)){
             throw new NoPermissionException();
         }
         File file = fileRepository.findOne(fileId);
