@@ -48,15 +48,14 @@ public class FileServiceImpl implements FileService {
         return fileRepository.getAvailableFiles(userId);
     }
 
-    public void addFile(long userId, String name, String description, byte[] file) throws JavkaException {
-        String path = String.format("%s_%s", userId, name);
-        System.out.println(path);
+    public void addFile(long userId, String name, long parentId, String description, byte[] file) throws JavkaException {
+        File fileMeta = new File(name, userId, parentId, description, false);
         try {
-            storage.saveFile(path, file);
+            storage.saveFile(fileMeta.getPath(), file);
         } catch (IOException io) {
-            throw new SaveFileException(path, io);
+            throw new SaveFileException(fileMeta.getPath(), io);
         }
-        fileRepository.save(new File(name, path, description, userId));
+        fileRepository.save(fileMeta);
     }
 
     public List<File> getDirectoryContent(long userId, long directoryId) {
@@ -75,5 +74,10 @@ public class FileServiceImpl implements FileService {
         if (!file.getCreator().equals(userId))
             throw new NoPermissionException();
         fileRepository.shareWithGroup(fileId, groupId);
+    }
+
+    public void createDirectory(long userId, String name, long parentId) throws JavkaException {
+        File file = new File(name, userId, parentId, "", true);
+        fileRepository.save(file);
     }
 }
