@@ -1,5 +1,7 @@
 package ru.naumen.javka.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 
 @Entity
@@ -31,11 +33,8 @@ public class User {
         return name;
     }
 
+    @JsonIgnore
     public String getPasswordHash() {
         return passwordHash;
-    }
-
-    public void cleanPasswordHash() {
-        passwordHash = null;
     }
 }

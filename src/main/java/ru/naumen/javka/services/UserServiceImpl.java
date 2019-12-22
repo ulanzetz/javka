@@ -11,14 +11,10 @@ public class UserServiceImpl implements UserService {
     }
 
     public User get(long id) {
-        User user = userRepository.findOne(id);
-        user.cleanPasswordHash();
-        return user;
+        return userRepository.findOne(id);
     }
 
     public Iterable<User> getAll() {
-        Iterable<User> iter = userRepository.findAll();
-        iter.forEach(User::cleanPasswordHash);
-        return iter;
+        return userRepository.findAll();
     }
 }
