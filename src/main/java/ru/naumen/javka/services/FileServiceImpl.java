@@ -24,7 +24,16 @@ public class FileServiceImpl implements FileService {
     }
 
     public byte[] getFile(long userId, String path) throws JavkaException {
-        // FIXME: add avaliable check
+        boolean available = false;
+        for (File file : getAvailableFiles(userId)){
+            if (file.getPath().equals(path)){
+                available = true;
+                break;
+            }
+        }
+        if (!available){
+            throw new NoPermissionException();
+        }
         try {
             return storage.getFile(path);
         } catch (IOException io) {
