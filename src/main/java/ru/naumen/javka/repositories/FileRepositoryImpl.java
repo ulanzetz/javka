@@ -52,7 +52,7 @@ public class FileRepositoryImpl extends SimpleJpaRepository<File, Long> implemen
                 "\tfiles.creator = ?1)";
 
         return entityManager
-                .createNativeQuery(query)
+                .createNativeQuery(query, File.class)
                 .setParameter(1, userId)
                 .setParameter(2, (int) directoryId)
                 .getResultList();

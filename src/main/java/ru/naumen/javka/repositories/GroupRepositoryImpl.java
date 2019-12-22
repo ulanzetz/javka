@@ -16,7 +16,7 @@ public class GroupRepositoryImpl extends SimpleJpaRepository<Group, Long> implem
 
     public List<Group> getUserGroups(long userId) {
         return entityManager
-                .createNativeQuery("SELECT id, name, creator FROM groups LEFT JOIN user_groups on id = group_id WHERE user_id =?1 OR creator =?1 ORDER BY id")
+                .createNativeQuery("SELECT id, name, creator FROM groups LEFT JOIN user_groups on id = group_id WHERE user_id =?1 OR creator =?1 ORDER BY id", Group.class)
                 .setParameter(1, userId)
                 .getResultList();
 
