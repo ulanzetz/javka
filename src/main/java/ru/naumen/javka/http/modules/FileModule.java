@@ -96,6 +96,7 @@ public class FileModule extends SessionModule {
                 pathPrefix("upload", () ->
                         userId(userId ->
                                 parameter("description", description ->
+                                        longParam("parentId", parentId ->
                                         parameter("name", name -> entity(Unmarshaller.entityToMultipartFormData(), formData -> {
                                                     try {
                                                         Multipart.FormData.Strict strict = formData
@@ -113,8 +114,7 @@ public class FileModule extends SessionModule {
 
                                                         byte[] content = first.getEntity().getData().toArray();
 
-                                                        // FIXME path
-                                                        fileService.addFile(userId, name, "path", description, content);
+                                                        fileService.addFile(userId, name, parentId, description, content);
 
                                                         return complete(StatusCodes.OK());
                                                     } catch (JavkaException javka) {
@@ -123,13 +123,13 @@ public class FileModule extends SessionModule {
                                                         return internalError(th);
                                                     }
                                                 }
-                                        ))))
+                                        )))))
                 ));
 
-        Route getFile = pathPrefix("get", () ->
-                userId(userId -> parameter("path", path -> {
+        Route download = pathPrefix("download", () ->
+                userId(userId -> longParam("fileId", fileId -> {
                     try {
-                        return binaryComplete(fileService.getFile(userId, path));
+                        return binaryComplete(fileService.getFile(userId, fileId));
                     } catch (JavkaException javka) {
                         return javkaError(javka);
                     } catch (Throwable th) {
@@ -137,13 +137,33 @@ public class FileModule extends SessionModule {
                     }
                 })));
 
+        Route createFolder =
+                pathPrefix("createFolder", () ->
+                        longParam("parentId", parentId ->
+                                parameter("name", name ->
+                                        userId(userId ->
+                                        {
+                                            try {
+                                                fileService.createDirectory(userId, name, parentId);
+                                                return complete(StatusCodes.OK());
+                                            } catch (JavkaException javka) {
+                                                return javkaError(javka);
+                                            } catch (Throwable th) {
+                                                return internalError(th);
+                                            }
+                                        })
+                                )
+                        )
+                );
+
         return pathPrefix("files", () -> concat(
                 shareWithGroup,
                 shareWithUser,
                 getAvailableFiles,
                 getDirectoryContent,
                 upload,
-                getFile
+                download,
+                createFolder
             )
         );
     }

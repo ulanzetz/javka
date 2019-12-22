@@ -61,7 +61,7 @@ public class FileRepositoryImpl extends SimpleJpaRepository<File, Long> implemen
     public List<File> getAvailableFiles(long userId) {
         String query = "SELECT *\n" +
                 "FROM files\n" +
-                "WHERE files.parentid IS NULL AND (" +
+                "WHERE files.parentid = -1 AND (" +
                 "\tEXISTS (SELECT * FROM user_files WHERE user_files.user_id = ?1 AND user_files.file_id = files.id)\n" +
                 "OR\n" +
                 "\tEXISTS (SELECT * FROM user_groups JOIN group_files on user_groups.group_id = group_files.group_id WHERE user_groups.user_id = ?1 AND group_files.file_id = files.id)\n" +
@@ -69,9 +69,39 @@ public class FileRepositoryImpl extends SimpleJpaRepository<File, Long> implemen
                 "\tfiles.creator = ?1)";
 
         return entityManager
-                .createNativeQuery(query)
+                .createNativeQuery(query, File.class)
                 .setParameter(1, userId)
                 .getResultList();
+    }
+
+    public boolean isFileAccessible(long userId, long fileId) {
+        String query = "SELECT 1\n" +
+                "FROM files\n" +
+                "WHERE files.id = ?2 AND (" +
+                "\tEXISTS (SELECT * FROM user_files WHERE user_files.user_id = ?1 AND user_files.file_id = files.id)\n" +
+                "OR\n" +
+                "\tEXISTS (SELECT * FROM user_groups JOIN group_files on user_groups.group_id = group_files.group_id WHERE user_groups.user_id = ?1 AND group_files.file_id = files.id)\n" +
+                "OR\n" +
+                "\tfiles.creator = ?1)";
+
+        return !entityManager
+                .createNativeQuery(query)
+                .setParameter(1, userId)
+                .setParameter(2, fileId)
+                .getResultList()
+                .isEmpty();
+
+    }
+
+
+    public File save(File file){
+        EntityTransaction transaction = entityManager.getTransaction();
+        if (!transaction.isActive())
+            transaction.begin();
+        entityManager.persist(file);
+        entityManager.refresh(file);
+        transaction.commit();
+        return file;
     }
 }
 

@@ -17,11 +17,12 @@ public class File {
 
     private String description;
 
-    public File(String name, String path, String description, long creator) {
+    public File(String name, long creator, long parentId,  String description, boolean isFolder) {
         this.name = name;
-        this.path = path;
+        this.path = isFolder? "" : String.format("%s_%s", creator, name);
         this.description = description;
         this.creator = creator;
+        this.parentId = parentId;
     }
 
     private Long parentId;

@@ -6,12 +6,10 @@ import ru.naumen.javka.exceptions.JavkaException;
 import ru.naumen.javka.exceptions.NoPermissionException;
 import ru.naumen.javka.exceptions.SaveFileException;
 import ru.naumen.javka.repositories.FileRepository;
-import ru.naumen.javka.session.SessionManager;
 import ru.naumen.javka.storage.FileStorage;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 
 public class FileServiceImpl implements FileService {
     private FileStorage storage;
@@ -23,12 +21,15 @@ public class FileServiceImpl implements FileService {
         this.fileRepository = fileRepository;
     }
 
-    public byte[] getFile(long userId, String path) throws JavkaException {
-        // FIXME: add avaliable check
+    public byte[] getFile(long userId, long fileId) throws JavkaException {
+        if (!fileRepository.isFileAccessible(userId, fileId)){
+            throw new NoPermissionException();
+        }
+        File file = fileRepository.findOne(fileId);
         try {
-            return storage.getFile(path);
+            return storage.getFile(file.getPath());
         } catch (IOException io) {
-            throw new GetFileException(path, io);
+            throw new GetFileException(file.getPath(), io);
         }
     }
 
@@ -36,15 +37,14 @@ public class FileServiceImpl implements FileService {
         return fileRepository.getAvailableFiles(userId);
     }
 
-    public void addFile(long userId, String name, String path, String description, byte[] file) throws JavkaException {
+    public void addFile(long userId, String name, long parentId, String description, byte[] file) throws JavkaException {
+        File fileMeta = new File(name, userId, parentId, description, false);
         try {
-            // FIXME: no path
-            storage.saveFile(name, file);
+            storage.saveFile(fileMeta.getPath(), file);
         } catch (IOException io) {
-            throw new SaveFileException(path, io);
+            throw new SaveFileException(fileMeta.getPath(), io);
         }
-        // FIXME: don't work
-        fileRepository.save(new File(name, path, description, userId));
+        fileRepository.save(fileMeta);
     }
 
     public List<File> getDirectoryContent(long userId, long directoryId) {
@@ -63,5 +63,10 @@ public class FileServiceImpl implements FileService {
         if (!file.getCreator().equals(userId))
             throw new NoPermissionException();
         fileRepository.shareWithGroup(fileId, groupId);
+    }
+
+    public void createDirectory(long userId, String name, long parentId) throws JavkaException {
+        File file = new File(name, userId, parentId, "", true);
+        fileRepository.save(file);
     }
 }
