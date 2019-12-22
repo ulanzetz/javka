@@ -73,5 +73,15 @@ public class FileRepositoryImpl extends SimpleJpaRepository<File, Long> implemen
                 .setParameter(1, userId)
                 .getResultList();
     }
+
+    public File save(File file){
+        EntityTransaction transaction = entityManager.getTransaction();
+        if (!transaction.isActive())
+            transaction.begin();
+        entityManager.persist(file);
+        entityManager.refresh(file);
+        transaction.commit();
+        return file;
+    }
 }
 

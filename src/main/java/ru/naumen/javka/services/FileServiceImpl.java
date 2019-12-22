@@ -23,21 +23,24 @@ public class FileServiceImpl implements FileService {
         this.fileRepository = fileRepository;
     }
 
-    public byte[] getFile(long userId, String path) throws JavkaException {
-        boolean available = false;
-        for (File file : getAvailableFiles(userId)){
-            if (file.getPath().equals(path)){
-                available = true;
-                break;
-            }
-        }
-        if (!available){
-            throw new NoPermissionException();
-        }
+    public byte[] getFile(long userId, long fileId) throws JavkaException {
+//        boolean available = false;
+//        List<File> files = getAvailableFiles(userId);
+//        for (int i =0; i< files.size(); i++) {
+//            if (files.get(i).getId() == fileId){
+//                available = true;
+//                break;
+//            }
+//        }
+//        if (!available){
+//            throw new NoPermissionException();
+//        }
+        File file = fileRepository.findOne(fileId);
+        System.out.println(file.getPath());
         try {
-            return storage.getFile(path);
+            return storage.getFile(file.getPath());
         } catch (IOException io) {
-            throw new GetFileException(path, io);
+            throw new GetFileException(file.getPath(), io);
         }
     }
 
@@ -45,14 +48,14 @@ public class FileServiceImpl implements FileService {
         return fileRepository.getAvailableFiles(userId);
     }
 
-    public void addFile(long userId, String name, String path, String description, byte[] file) throws JavkaException {
+    public void addFile(long userId, String name, String description, byte[] file) throws JavkaException {
+        String path = String.format("%s_%s", userId, name);
+        System.out.println(path);
         try {
-            // FIXME: no path
-            storage.saveFile(name, file);
+            storage.saveFile(path, file);
         } catch (IOException io) {
             throw new SaveFileException(path, io);
         }
-        // FIXME: don't work
         fileRepository.save(new File(name, path, description, userId));
     }
 

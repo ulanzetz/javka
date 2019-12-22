@@ -113,8 +113,7 @@ public class FileModule extends SessionModule {
 
                                                         byte[] content = first.getEntity().getData().toArray();
 
-                                                        // FIXME path
-                                                        fileService.addFile(userId, name, "path", description, content);
+                                                        fileService.addFile(userId, name, description, content);
 
                                                         return complete(StatusCodes.OK());
                                                     } catch (JavkaException javka) {
@@ -126,10 +125,10 @@ public class FileModule extends SessionModule {
                                         ))))
                 ));
 
-        Route getFile = pathPrefix("get", () ->
-                userId(userId -> parameter("path", path -> {
+        Route download = pathPrefix("download", () ->
+                userId(userId -> longParam("fileId", fileId -> {
                     try {
-                        return binaryComplete(fileService.getFile(userId, path));
+                        return binaryComplete(fileService.getFile(userId, fileId));
                     } catch (JavkaException javka) {
                         return javkaError(javka);
                     } catch (Throwable th) {
@@ -143,7 +142,7 @@ public class FileModule extends SessionModule {
                 getAvailableFiles,
                 getDirectoryContent,
                 upload,
-                getFile
+                download
             )
         );
     }
