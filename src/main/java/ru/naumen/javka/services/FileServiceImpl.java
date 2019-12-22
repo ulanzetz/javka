@@ -6,12 +6,10 @@ import ru.naumen.javka.exceptions.JavkaException;
 import ru.naumen.javka.exceptions.NoPermissionException;
 import ru.naumen.javka.exceptions.SaveFileException;
 import ru.naumen.javka.repositories.FileRepository;
-import ru.naumen.javka.session.SessionManager;
 import ru.naumen.javka.storage.FileStorage;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 
 public class FileServiceImpl implements FileService {
     private FileStorage storage;
@@ -24,19 +22,18 @@ public class FileServiceImpl implements FileService {
     }
 
     public byte[] getFile(long userId, long fileId) throws JavkaException {
-//        boolean available = false;
-//        List<File> files = getAvailableFiles(userId);
-//        for (int i =0; i< files.size(); i++) {
-//            if (files.get(i).getId() == fileId){
-//                available = true;
-//                break;
-//            }
-//        }
-//        if (!available){
-//            throw new NoPermissionException();
-//        }
+        boolean available = false;
+        List<File> files = getAvailableFiles(userId);
+        for (int i =0; i< files.size(); i++) {
+            if (files.get(i).getId() == fileId){
+                available = true;
+                break;
+            }
+        }
+        if (!available){
+            throw new NoPermissionException();
+        }
         File file = fileRepository.findOne(fileId);
-        System.out.println(file.getPath());
         try {
             return storage.getFile(file.getPath());
         } catch (IOException io) {
