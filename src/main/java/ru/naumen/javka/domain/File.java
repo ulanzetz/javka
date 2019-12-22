@@ -22,7 +22,7 @@ public class File {
         this.path = isFolder? "" : String.format("%s_%s", creator, name);
         this.description = description;
         this.creator = creator;
-        this.parentId = parentId != -1 ? parentId: null;
+        this.parentId = parentId;
     }
 
     private Long parentId;

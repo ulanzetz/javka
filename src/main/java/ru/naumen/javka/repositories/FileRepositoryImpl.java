@@ -61,7 +61,7 @@ public class FileRepositoryImpl extends SimpleJpaRepository<File, Long> implemen
     public List<File> getAvailableFiles(long userId) {
         String query = "SELECT *\n" +
                 "FROM files\n" +
-                "WHERE files.parentid IS NULL AND (" +
+                "WHERE files.parentid = -1 AND (" +
                 "\tEXISTS (SELECT * FROM user_files WHERE user_files.user_id = ?1 AND user_files.file_id = files.id)\n" +
                 "OR\n" +
                 "\tEXISTS (SELECT * FROM user_groups JOIN group_files on user_groups.group_id = group_files.group_id WHERE user_groups.user_id = ?1 AND group_files.file_id = files.id)\n" +
