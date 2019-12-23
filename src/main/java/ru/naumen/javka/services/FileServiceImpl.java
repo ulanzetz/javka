@@ -55,7 +55,7 @@ public class FileServiceImpl implements FileService {
         File file = fileRepository.findOne(fileId);
         if (!file.getCreator().equals(userId))
             throw new NoPermissionException();
-        fileRepository.shareWithUser(fileId, userId);
+        fileRepository.shareWithUser(fileId, otherUserId);
     }
 
     public void shareWithGroup(long userId, long fileId, long groupId) throws NoPermissionException {

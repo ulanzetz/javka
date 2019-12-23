@@ -19,7 +19,7 @@ public class File {
 
     public File(String name, long creator, long parentId,  String description, boolean isFolder) {
         this.name = name;
-        this.path = isFolder? "" : String.format("%s_%s", creator, name);
+        this.path = isFolder? "" : String.format("%s_%s_%s", creator, parentId, name);
         this.description = description;
         this.creator = creator;
         this.parentId = parentId;
