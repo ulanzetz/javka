@@ -21,16 +21,11 @@ public class GroupModule extends SessionModule {
     @Override
     public Route api() {
         Route create = pathPrefix("create", () ->
-                parameterList("userIds", userIds ->
+                longParams("userIds", userIds ->
                 parameter("name", name ->
                         userId(userId -> {
                             try {
-                                Object[] userIdsArray = userIds.toArray();
-                                long[] users = new long[userIdsArray.length];
-                                for(int i=0; i < users.length; i++) {
-                                    users[i] = Long.parseLong(userIdsArray[i].toString());
-                                }
-                                Long id = groupService.create(userId, name, users);
+                                Long id = groupService.create(userId, name, userIds);
                                 return jsonComplete(new HashMap<String, Long>() {
                                     {
                                         put("id", id);

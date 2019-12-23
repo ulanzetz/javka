@@ -24,11 +24,11 @@ public class GroupRepositoryImpl extends SimpleJpaRepository<Group, Long> implem
 
     }
 
-    public long createGroup(long creatorId, String name, long[] userIds) {
+    public long createGroup(long creatorId, String name, List<Long> userIds) {
         EntityTransaction transaction = entityManager.getTransaction();
         if (!transaction.isActive())
             transaction.begin();
-        long groupId =  (long) (int) entityManager
+        long groupId = (long) (int) entityManager
                 .createNativeQuery("INSERT into groups (name, creator) VALUES (?1, ?2) RETURNING id")
                 .setParameter(1, name)
                 .setParameter(2, creatorId)
@@ -39,18 +39,18 @@ public class GroupRepositoryImpl extends SimpleJpaRepository<Group, Long> implem
         return groupId;
     }
 
-    private void addUsersToGroup(long groupId, long[] userIds) {
+    private void addUsersToGroup(long groupId, List<Long> userIds) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("INSERT INTO user_groups VALUES ");
-        for (int i = 0; i< userIds.length; i++) {
-            stringBuilder.append(String.format("(?%d, ?0),", i+1));
+        for (int i = 0; i < userIds.size(); i++) {
+            stringBuilder.append(String.format("(?%d, ?0),", i + 1));
         }
-        stringBuilder.deleteCharAt(stringBuilder.length()-1);
+        stringBuilder.deleteCharAt(stringBuilder.length() - 1);
         stringBuilder.append(";");
         Query nativeQuery = entityManager.createNativeQuery(stringBuilder.toString());
         nativeQuery.setParameter(0, groupId);
-        for (int i = 0; i< userIds.length; i++) {
-            nativeQuery.setParameter(i+1, userIds[i]);
+        for (int i = 0; i < userIds.size(); i++) {
+            nativeQuery.setParameter(i + 1, userIds.get(i));
         }
         nativeQuery.executeUpdate();
     }

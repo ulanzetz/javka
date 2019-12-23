@@ -13,6 +13,9 @@ import org.slf4j.Logger;
 import ru.naumen.javka.exceptions.JavkaException;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Function;
 
 public abstract class HttpModule extends AllDirectives {
@@ -52,5 +55,17 @@ public abstract class HttpModule extends AllDirectives {
 
     Route longParam(String name, Function<Long, Route> inner) {
         return parameter(StringUnmarshallers.LONG, name, inner);
+    }
+
+    Route longParams(String name, Function<List<Long>, Route> inner) {
+        return parameterList(StringUnmarshallers.LONG, name, inner);
+    }
+
+    Route uuidParam(String name, Function<UUID, Route> inner) {
+        return parameter(StringUnmarshallers.UUID, name, inner);
+    }
+
+    Route optUuidParam(String name, Function<Optional<UUID>, Route> inner) {
+        return parameterOptional(StringUnmarshallers.UUID, name, inner);
     }
 }

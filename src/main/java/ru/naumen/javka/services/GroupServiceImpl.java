@@ -13,7 +13,7 @@ public class GroupServiceImpl implements GroupService {
         this.groupRepository = groupRepository;
     }
 
-    public Long create(long userId, String name, long[] userIds) {
+    public Long create(long userId, String name, List<Long> userIds) {
         return groupRepository.createGroup(userId, name, userIds);
     }
 

@@ -10,8 +10,10 @@ import ru.naumen.javka.exceptions.JavkaException;
 import ru.naumen.javka.services.FileService;
 import ru.naumen.javka.session.SessionManager;
 
+import java.util.concurrent.TimeUnit;
+
 public class FileModule extends SessionModule {
-    private long UNMARHALL_TIMEOUT_MILLIS = 10000000;
+    private long UNMARHALL_TIMEOUT_MILLIS = 10000;
 
     private FileService fileService;
     private Logger logger;
@@ -26,7 +28,7 @@ public class FileModule extends SessionModule {
     public Route api() {
         Route shareWithUser =
                 pathPrefix("shareWithUser", () ->
-                        longParam("fileId", fileId ->
+                        uuidParam("fileId", fileId ->
                                 longParam("otherUserId", otherUserId ->
                                         userId(userId ->
                                         {
@@ -45,7 +47,7 @@ public class FileModule extends SessionModule {
 
         Route getDirectoryContent =
                 pathPrefix("getDirectoryContent", () ->
-                        longParam("directoryId", directoryId ->
+                        uuidParam("directoryId", directoryId ->
                                 userId(userId ->
                                 {
                                     try {
@@ -75,7 +77,7 @@ public class FileModule extends SessionModule {
 
         Route shareWithGroup =
                 pathPrefix("shareWithGroup", () ->
-                        longParam("fileId", fileId ->
+                        uuidParam("fileId", fileId ->
                                 longParam("groupId", groupId ->
                                         userId(userId ->
                                         {
@@ -96,38 +98,35 @@ public class FileModule extends SessionModule {
                 pathPrefix("upload", () ->
                         userId(userId ->
                                 parameter("description", description ->
-                                        longParam("parentId", parentId ->
-                                        parameter("name", name -> entity(Unmarshaller.entityToMultipartFormData(), formData -> {
-                                                    try {
-                                                        Multipart.FormData.Strict strict = formData
-                                                                .toStrict(UNMARHALL_TIMEOUT_MILLIS, ctx.getMaterializer())
-                                                                .toCompletableFuture()
-                                                                .get();
+                                        optUuidParam("parent", parentId ->
+                                                parameter("name", name -> entity(Unmarshaller.entityToMultipartFormData(), formData -> {
+                                                            try {
+                                                                Multipart.BodyPart.Strict file = formData
+                                                                        .toStrict(UNMARHALL_TIMEOUT_MILLIS, ctx.getMaterializer())
+                                                                        .thenCompose(strict ->
+                                                                                strict
+                                                                                        .getStrictParts()
+                                                                                        .iterator()
+                                                                                        .next()
+                                                                                        .toStrict(UNMARHALL_TIMEOUT_MILLIS, ctx.getMaterializer())
+                                                                        ).toCompletableFuture().get(UNMARHALL_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
 
-                                                        Multipart.BodyPart.Strict first = strict
-                                                                .getStrictParts()
-                                                                .iterator()
-                                                                .next()
-                                                                .toStrict(UNMARHALL_TIMEOUT_MILLIS, ctx.getMaterializer())
-                                                                .toCompletableFuture()
-                                                                .get();
+                                                                byte[] content = file.getEntity().getData().toArray();
 
-                                                        byte[] content = first.getEntity().getData().toArray();
+                                                                fileService.addFile(userId, name, parentId, description, content);
 
-                                                        fileService.addFile(userId, name, parentId, description, content);
-
-                                                        return complete(StatusCodes.OK());
-                                                    } catch (JavkaException javka) {
-                                                        return javkaError(javka);
-                                                    } catch (Throwable th) {
-                                                        return internalError(th);
-                                                    }
-                                                }
-                                        )))))
+                                                                return complete(StatusCodes.OK());
+                                                            } catch (JavkaException javka) {
+                                                                return javkaError(javka);
+                                                            } catch (Throwable th) {
+                                                                return internalError(th);
+                                                            }
+                                                        }
+                                                )))))
                 ));
 
         Route download = pathPrefix("download", () ->
-                userId(userId -> longParam("fileId", fileId -> {
+                userId(userId -> uuidParam("fileId", fileId -> {
                     try {
                         return binaryComplete(fileService.getFile(userId, fileId));
                     } catch (JavkaException javka) {
@@ -139,7 +138,7 @@ public class FileModule extends SessionModule {
 
         Route createFolder =
                 pathPrefix("createFolder", () ->
-                        longParam("parentId", parentId ->
+                        optUuidParam("parent", parentId ->
                                 parameter("name", name ->
                                         userId(userId ->
                                         {
@@ -164,7 +163,7 @@ public class FileModule extends SessionModule {
                 upload,
                 download,
                 createFolder
-            )
+                )
         );
     }
 

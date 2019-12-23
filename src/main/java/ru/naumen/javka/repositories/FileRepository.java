@@ -5,14 +5,14 @@ import ru.naumen.javka.domain.File;
 
 import java.util.List;
 
-public interface FileRepository extends CrudRepository<File, Long> {
-    void shareWithUser(long fileId, long userId);
+public interface FileRepository extends CrudRepository<File, String> {
+    void shareWithUser(String fileId, long userId);
 
-    void shareWithGroup(long fileId, long groupId);
+    void shareWithGroup(String fileId, long groupId);
 
-    List<File> getDirectoryContent(long userId, long directoryId);
+    List<File> getDirectoryContent(long userId, String directoryId);
 
     List<File> getAvailableFiles(long userId);
 
-    boolean isFileAccessible(long userId, long fileId);
+    boolean isFileAccessible(long userId, String fileId);
 }

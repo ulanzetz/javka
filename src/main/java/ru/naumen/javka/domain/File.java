@@ -1,13 +1,13 @@
 package ru.naumen.javka.domain;
 
 import javax.persistence.*;
+import java.util.Optional;
 
 @Entity
 @Table(name = "files")
 public class File {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private String id;
 
     private String name;
 
@@ -17,21 +17,23 @@ public class File {
 
     private String description;
 
-    public File(String name, long creator, long parentId,  String description, boolean isFolder) {
+    public File(String id, String name, long creator, Optional<String> parentId, String description, boolean isFolder) {
+        this.id = id;
+        this.path = isFolder ? "" : id;
         this.name = name;
-        this.path = isFolder? "" : String.format("%s_%s_%s", creator, parentId, name);
         this.description = description;
         this.creator = creator;
-        this.parentId = parentId;
+        this.parentId = parentId.orElse(null);
     }
 
-    private Long parentId;
+    @Column(name = "parent_id")
+    private String parentId;
 
     public File() {
 
     }
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
@@ -51,7 +53,7 @@ public class File {
         return creator;
     }
 
-    public long getParentId() {
+    public String getParentId() {
         return parentId;
     }
 }

@@ -10,6 +10,8 @@ import ru.naumen.javka.storage.FileStorage;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 public class FileServiceImpl implements FileService {
     private FileStorage storage;
@@ -21,15 +23,15 @@ public class FileServiceImpl implements FileService {
         this.fileRepository = fileRepository;
     }
 
-    public byte[] getFile(long userId, long fileId) throws JavkaException {
-        if (!fileRepository.isFileAccessible(userId, fileId)){
+    public byte[] getFile(long userId, UUID fileId) throws JavkaException {
+        if (!fileRepository.isFileAccessible(userId, fileId.toString())) {
             throw new NoPermissionException();
         }
-        File file = fileRepository.findOne(fileId);
+        File file = fileRepository.findOne(fileId.toString());
         try {
-            return storage.getFile(file.getPath());
+            return storage.getFile(file.getId());
         } catch (IOException io) {
-            throw new GetFileException(file.getPath(), io);
+            throw new GetFileException(file.getId(), io);
         }
     }
 
@@ -37,36 +39,36 @@ public class FileServiceImpl implements FileService {
         return fileRepository.getAvailableFiles(userId);
     }
 
-    public void addFile(long userId, String name, long parentId, String description, byte[] file) throws JavkaException {
-        File fileMeta = new File(name, userId, parentId, description, false);
+    public void addFile(long userId, String name, Optional<UUID> parentId, String description, byte[] file) throws JavkaException {
+        File fileMeta = new File(java.util.UUID.randomUUID().toString(), name, userId, parentId.map(UUID::toString), description, false);
         try {
-            storage.saveFile(fileMeta.getPath(), file);
+            storage.saveFile(fileMeta.getId(), file);
         } catch (IOException io) {
-            throw new SaveFileException(fileMeta.getPath(), io);
+            throw new SaveFileException(fileMeta.getId(), io);
         }
         fileRepository.save(fileMeta);
     }
 
-    public List<File> getDirectoryContent(long userId, long directoryId) {
-        return fileRepository.getDirectoryContent(userId, directoryId);
+    public List<File> getDirectoryContent(long userId, UUID directoryId) {
+        return fileRepository.getDirectoryContent(userId, directoryId.toString());
     }
 
-    public void shareWithUser(long userId, long fileId, long otherUserId) throws JavkaException {
-        File file = fileRepository.findOne(fileId);
+    public void shareWithUser(long userId, UUID fileId, long otherUserId) throws JavkaException {
+        File file = fileRepository.findOne(fileId.toString());
         if (!file.getCreator().equals(userId))
             throw new NoPermissionException();
-        fileRepository.shareWithUser(fileId, otherUserId);
+        fileRepository.shareWithUser(fileId.toString(), otherUserId);
     }
 
-    public void shareWithGroup(long userId, long fileId, long groupId) throws NoPermissionException {
-        File file = fileRepository.findOne(fileId);
+    public void shareWithGroup(long userId, UUID fileId, long groupId) throws NoPermissionException {
+        File file = fileRepository.findOne(fileId.toString());
         if (!file.getCreator().equals(userId))
             throw new NoPermissionException();
-        fileRepository.shareWithGroup(fileId, groupId);
+        fileRepository.shareWithGroup(fileId.toString(), groupId);
     }
 
-    public void createDirectory(long userId, String name, long parentId) throws JavkaException {
-        File file = new File(name, userId, parentId, "", true);
+    public void createDirectory(long userId, String name, Optional<UUID> parentId) {
+        File file = new File(java.util.UUID.randomUUID().toString(), name, userId, parentId.map(UUID::toString), null, true);
         fileRepository.save(file);
     }
 }
