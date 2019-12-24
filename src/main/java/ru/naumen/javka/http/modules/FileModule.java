@@ -1,19 +1,16 @@
 package ru.naumen.javka.http.modules;
 
-import akka.http.javadsl.model.Multipart;
 import akka.http.javadsl.server.Route;
 import akka.http.javadsl.unmarshalling.Unmarshaller;
 import akka.http.scaladsl.model.StatusCodes;
+import akka.util.ByteString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.naumen.javka.exceptions.JavkaException;
 import ru.naumen.javka.services.FileService;
 import ru.naumen.javka.session.SessionManager;
 
-import java.util.concurrent.TimeUnit;
-
 public class FileModule extends SessionModule {
-    private long UNMARHALL_TIMEOUT_MILLIS = 10000;
 
     private FileService fileService;
     private Logger logger;
@@ -99,30 +96,19 @@ public class FileModule extends SessionModule {
                         userId(userId ->
                                 parameter("description", description ->
                                         optUuidParam("parent", parentId ->
-                                                parameter("name", name -> entity(Unmarshaller.entityToMultipartFormData(), formData -> {
-                                                            try {
-                                                                Multipart.BodyPart.Strict file = formData
-                                                                        .toStrict(UNMARHALL_TIMEOUT_MILLIS, ctx.getMaterializer())
-                                                                        .thenCompose(strict ->
-                                                                                strict
-                                                                                        .getStrictParts()
-                                                                                        .iterator()
-                                                                                        .next()
-                                                                                        .toStrict(UNMARHALL_TIMEOUT_MILLIS, ctx.getMaterializer())
-                                                                        ).toCompletableFuture().get(UNMARHALL_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
-
-                                                                byte[] content = file.getEntity().getData().toArray();
-
-                                                                fileService.addFile(userId, name, parentId, description, content);
-
-                                                                return complete(StatusCodes.OK());
-                                                            } catch (JavkaException javka) {
-                                                                return javkaError(javka);
-                                                            } catch (Throwable th) {
-                                                                return internalError(th);
-                                                            }
-                                                        }
-                                                )))))
+                                                parameter("name", name ->
+                                                        fileUpload("file", (fileInfo, stream) ->
+                                                                onSuccess(stream.runFold(ByteString.empty(), ByteString::concat, ctx.getMaterializer()), byteString -> {
+                                                                    try {
+                                                                        fileService.addFile(userId, name, parentId, description, byteString.toArray());
+                                                                        return ok();
+                                                                    } catch (JavkaException javka) {
+                                                                        return javkaError(javka);
+                                                                    } catch (Throwable th) {
+                                                                        return internalError(th);
+                                                                    }
+                                                                })
+                                                        )))))
                 ));
 
         Route download = pathPrefix("download", () ->
