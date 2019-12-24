@@ -12,12 +12,12 @@ create unique index users_id_uindex
 
 create table files
 (
-    id serial not null
+    id varchar(36) not null
         constraint files_pk
             primary key,
     name varchar(100) not null,
     creator int not null,
-    parentId int,
+    parent_id varchar(36),
     description varchar(100),
     path varchar(256) not null
 );
@@ -28,7 +28,7 @@ create unique index files_id_uindex
 alter table files
     add constraint files_users_id_fk
         foreign key (creator) references users;
-    add constraint files_files_id_fk
+add constraint files_files_id_fk
         foreign key (parent) references files;
 
 create table groups
@@ -50,7 +50,7 @@ create table user_files
     user_id int not null
         constraint user_files_users_id_fk
             references users,
-    file_id int not null
+    file_id varchar(36) not null
         constraint user_files_files_id_fk
             references files (id),
     constraint user_files_pk
@@ -74,7 +74,7 @@ create table group_files
     group_id int not null
         constraint group_files_groups_id_fk
             references groups,
-    file_id int not null
+    file_id varchar(36) not null
         constraint group_files_files_id_fk
             references files (id),
     constraint group_files_pk

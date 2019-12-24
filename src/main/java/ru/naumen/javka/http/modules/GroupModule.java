@@ -21,10 +21,11 @@ public class GroupModule extends SessionModule {
     @Override
     public Route api() {
         Route create = pathPrefix("create", () ->
+                longParams("userIds", userIds ->
                 parameter("name", name ->
                         userId(userId -> {
                             try {
-                                Long id = groupService.create(userId, name);
+                                Long id = groupService.create(userId, name, userIds);
                                 return jsonComplete(new HashMap<String, Long>() {
                                     {
                                         put("id", id);
@@ -34,7 +35,7 @@ public class GroupModule extends SessionModule {
                                 return internalError(th);
                             }
                         })
-                )
+                ))
         );
 
         Route getAllAvailable = pathEndOrSingleSlash(() ->

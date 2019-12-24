@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface GroupRepository extends CrudRepository<Group, Long> {
     List<Group> getUserGroups(long userId);
-    long createGroup(long creatorId, String name);
+    long createGroup(long creatorId, String name, List<Long> userIds);
 }
